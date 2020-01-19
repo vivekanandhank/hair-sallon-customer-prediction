@@ -1,0 +1,112 @@
+import pandas as pd
+import numpy as np
+import random as rnd
+
+#Common Model Helpers
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+from sklearn import feature_selection
+from sklearn import model_selection
+from sklearn import metrics
+
+#Visualization
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.pylab as pylab
+import seaborn as sns
+
+
+#Configure Visualization Defaults
+#%matplotlib inline = show plots in Jupyter Notebook browser
+%matplotlib inline
+mpl.style.use('ggplot')
+sns.set_style('white')
+pylab.rcParams['figure.figsize'] = 12,8
+
+from sklearn.preprocessing import StandardScaler
+print(df.columns.values)
+df.head()
+df = pd.read_csv(r"A:\ml\sample")
+df.describe()
+#correlation matrix
+corrmat = df.corr()
+f, ax = plt.subplots(figsize=(12, 9))
+sns.heatmap(corrmat, vmax=.8, square=True)
+ df['last_category'].fillna(df['last_category'].mode()[0], inplace = True)
+df['book_tod'].fillna(df['book_tod'].mode()[0], inplace = True)
+df['last_staff'].fillna(df['last_staff'].mode()[0], inplace = True)
+df['last_dow'].fillna(df['last_dow'].mode()[0], inplace = True)
+df['last_tod'].fillna(df['last_tod'].mode()[0], inplace = True)
+df['last_receipt_tot'].fillna(df['last_receipt_tot'].median(), inplace = True)
+ df.head()
+ df.info()
+print('_'*40)
+df.info()
+print('Train columns with null values:\n', df.isnull().sum())
+print("-"*10)
+df.describe(include = 'all')
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder#code categorical data
+label = LabelEncoder()
+df['book_tod'] = label.fit_transform(df['book_tod'])
+df['book_dow'] = label.fit_transform(df['book_dow'])
+df['book_category'] = label.fit_transform(df['book_category'])
+df['book_staff'] = label.fit_transform(df['book_staff'])
+df['last_category'] = label.fit_transform(df['last_category'])
+df['last_staff'] = label.fit_transform(df['last_staff'])
+df['last_dow'] = label.fit_transform(df['last_dow'])
+df['last_tod'] = label.fit_transform(df['last_tod'])
+df.head()
+y=df['noshow']
+y.shape
+y.describe()
+#correlation matrix
+corrmat = df.corr()
+f, ax = plt.subplots(figsize=(12, 9))
+sns.heatmap(corrmat, vmax=.8, square=True)
+#saleprice correlation matrix
+k = 7 #number of variables for heatmap
+cols = corrmat.nlargest(k, 'noshow')['noshow'].index
+cm = np.corrcoef(df[cols].values.T)
+sns.set(font_scale=1.25)
+hm = sns.heatmap(cm, cbar=True, annot=True, square=True, fmt='.2f', annot_kws={'size': 10}, yticklabels=cols.values, xticklabels=cols.values)
+plt.show()
+#standardizing data
+noshow_scaled = StandardScaler().fit_transform(df['noshow'][:,np.newaxis]);
+low_range = noshow_scaled[noshow_scaled[:,0].argsort()][:10]
+high_range= noshow_scaled[noshow_scaled[:,0].argsort()][-10:]
+print('outer range (low) of the distribution:')
+print(low_range)
+print('\nouter range (high) of the distribution:')
+print(high_range)
+#bivariate analysis saleprice/grlivarea
+var = 'last_cumnoshow'
+data = pd.concat([df['noshow'], df[var]], axis=1)
+data.plot.scatter(x=var, y='noshow', ylim=(0,800000));
+#bivariate analysis saleprice/grlivarea
+var = 'last_cumstyle'
+data = pd.concat([df['noshow'], df[var]], axis=1)
+data.plot.scatter(x=var, y='noshow', ylim=(0,800000));
+
+del df['noshow']
+# run this script.
+train_df, val_df, train_y, val_y = train_test_split(df, y, random_state = 0)
+train_df.shape,val_df.shape
+# RandomForestClassifier
+#  GridSearchCV
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+classifier = RandomForestClassifier(n_estimators=300, random_state=0)
+grid_param = {
+    'n_estimators': [100, 300, 500, 800, 1000],
+    'criterion': ['gini', 'entropy'],
+    'bootstrap': [True, False]
+}
+gd_sr = GridSearchCV(estimator=classifier,
+                     param_grid=grid_param,
+                     scoring='accuracy',
+                     cv=5,
+                     n_jobs=-1)
+gd_sr.fit(train_X, train_y)
+best_parameters = gd_sr.best_params_
+print(best_parameters)
+best_result = gd_sr.best_score_
+print(best_result)
